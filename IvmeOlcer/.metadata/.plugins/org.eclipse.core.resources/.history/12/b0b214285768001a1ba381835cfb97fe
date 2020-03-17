@@ -1,0 +1,182 @@
+/**	
+ * |----------------------------------------------------------------------
+ * | Copyright (C) Tilen Majerle, 2014
+ * | 
+ * | This program is free software: you can redistribute it and/or modify
+ * | it under the terms of the GNU General Public License as published by
+ * | the Free Software Foundation, either version 3 of the License, or
+ * | any later version.
+ * |  
+ * | This program is distributed in the hope that it will be useful,
+ * | but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * | GNU General Public License for more details.
+ * | 
+ * | You should have received a copy of the GNU General Public License
+ * | along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * |----------------------------------------------------------------------
+ */
+#include "tm_stm32f4_spi.h"
+
+/* Private functions */
+
+
+
+TM_SPI_DataSize_t TM_SPI_SetDataSize(SPI_TypeDef* SPIx, TM_SPI_DataSize_t DataSize) {
+	TM_SPI_DataSize_t status = (SPIx->CR1 & SPI_CR1_DFF) ? TM_SPI_DataSize_16b : TM_SPI_DataSize_8b;
+	
+	/* Disable SPI first */
+	SPIx->CR1 &= ~SPI_CR1_SPE;
+	
+	/* Set proper value */
+	if (DataSize == TM_SPI_DataSize_16b) {
+		/* Set bit for frame */
+		SPIx->CR1 |= SPI_CR1_DFF;
+	} else {
+		/* Clear bit for frame */
+		SPIx->CR1 &= ~SPI_CR1_DFF;
+	}
+	
+	/* Enable SPI back */
+	SPIx->CR1 |= SPI_CR1_SPE;
+	
+	/* Return status */
+	return status;
+}
+
+void TM_SPI_SendMulti(SPI_TypeDef* SPIx, uint8_t* dataOut, uint8_t* dataIn, uint32_t count) {
+	uint32_t i;
+	
+	/* Check if SPI is enabled */
+	SPI_CHECK_ENABLED(SPIx);
+	
+	/* Wait for previous transmissions to complete if DMA TX enabled for SPI */
+	SPI_WAIT(SPIx);
+	
+	for (i = 0; i < count; i++) {
+		/* Fill output buffer with data */
+		SPIx->DR = dataOut[i];
+		
+		/* Wait for SPI to end everything */
+		SPI_WAIT(SPIx);
+		
+		/* Read data register */
+		dataIn[i] = SPIx->DR;
+	}
+}
+
+void TM_SPI_WriteMulti(SPI_TypeDef* SPIx, uint8_t* dataOut, uint32_t count) {
+	uint32_t i;	
+	
+	/* Check if SPI is enabled */
+	SPI_CHECK_ENABLED(SPIx);
+	
+	/* Wait for previous transmissions to complete if DMA TX enabled for SPI */
+	SPI_WAIT(SPIx);
+	
+	for (i = 0; i < count; i++) {
+		/* Fill output buffer with data */
+		SPIx->DR = dataOut[i];
+		
+		/* Wait for SPI to end everything */
+		SPI_WAIT(SPIx);
+		
+		/* Read data register */
+		(void)SPIx->DR;
+	}
+}
+
+void TM_SPI_ReadMulti(SPI_TypeDef* SPIx, uint8_t* dataIn, uint8_t dummy, uint32_t count) {
+	uint32_t i;
+	
+	/* Check if SPI is enabled */
+	SPI_CHECK_ENABLED(SPIx);
+	
+	/* Wait for previous transmissions to complete if DMA TX enabled for SPI */
+	SPI_WAIT(SPIx);
+	
+	for (i = 0; i < count; i++) {
+		/* Fill output buffer with data */
+		SPIx->DR = dummy;
+		
+		/* Wait for SPI to end everything */
+		SPI_WAIT(SPIx);
+		
+		/* Save data to buffer */
+		dataIn[i] = SPIx->DR;
+	}
+}
+
+void TM_SPI_SendMulti16(SPI_TypeDef* SPIx, uint16_t* dataOut, uint16_t* dataIn, uint32_t count) {
+	uint32_t i;	
+	
+	/* Check if SPI is enabled */
+	SPI_CHECK_ENABLED(SPIx);
+	
+	/* Wait for previous transmissions to complete if DMA TX enabled for SPI */
+	SPI_WAIT(SPIx);
+	
+	for (i = 0; i < count; i++) {
+		/* Fill output buffer with data */
+		SPIx->DR = dataOut[i];
+		
+		/* Wait for SPI to end everything */
+		SPI_WAIT(SPIx);
+		
+		/* Read data register */
+		dataIn[i] = SPIx->DR;
+	}
+}
+
+void TM_SPI_WriteMulti16(SPI_TypeDef* SPIx, uint16_t* dataOut, uint32_t count) {
+	uint32_t i;
+	
+	/* Check if SPI is enabled */
+	SPI_CHECK_ENABLED(SPIx);
+	
+	/* Wait for previous transmissions to complete if DMA TX enabled for SPI */
+	SPI_WAIT(SPIx);
+	
+	for (i = 0; i < count; i++) {
+		/* Fill output buffer with data */
+		SPIx->DR = dataOut[i];
+		
+		/* Wait for SPI to end everything */
+		SPI_WAIT(SPIx);
+		
+		/* Read data register */
+		(void)SPIx->DR;
+	}
+}
+
+void TM_SPI_ReadMulti16(SPI_TypeDef* SPIx, uint16_t* dataIn, uint16_t dummy, uint32_t count) {
+	uint32_t i;
+	
+	/* Check if SPI is enabled */
+	SPI_CHECK_ENABLED(SPIx);
+	
+	/* Wait for previous transmissions to complete if DMA TX enabled for SPI */
+	SPI_WAIT(SPIx);
+	
+	for (i = 0; i < count; i++) {
+		/* Fill output buffer with data */
+		SPIx->DR = dummy;
+		
+		/* Wait for SPI to end everything */
+		SPI_WAIT(SPIx);
+		
+		/* Save data to buffer */
+		dataIn[i] = SPIx->DR;
+	}
+}
+
+__weak void TM_SPI_InitCustomPinsCallback(SPI_TypeDef* SPIx, uint16_t AlternateFunction) {
+	/* Custom user function. */
+	/* In case user needs functionality for custom pins, this function should be declared outside this library */
+}
+
+/* Private functions */
+
+/* Private functions */
+
+
