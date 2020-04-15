@@ -22,6 +22,7 @@
 #include "main.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "IvmeOlcereVeriGonder.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -216,18 +217,17 @@ int main(void)
 	   	   /* WHO I AM OKUMA KISMI
 	   	    	* BITIS
 	   	    		*/
-
+/*
 		  /*
 		   * X DEGERI OKUMA KISMI.
 
 	    		0X28 X DEGERININ LOW BITINI
 				0X29 X DEGERININ HIGH BITINI ALACAKTIR.
-	*/
+
 	   	   	   HAL_GPIO_WritePin(CS_I2C_SPI_GPIO_Port,CS_I2C_SPI_Pin,GPIO_PIN_RESET);
 		   	   SPI_Tx_Buffer[0] = 0x28 | 0x80;
 		  	   HAL_SPI_Transmit(&hspi1,SPI_Tx_Buffer,1,50);
 		  	   HAL_SPI_Receive(&hspi1, &myGlobalStruct.temporaryIvmeOlcerVerileri.temp_myXValue[0],1,50);
-
 		   HAL_GPIO_WritePin(CS_I2C_SPI_GPIO_Port,CS_I2C_SPI_Pin,GPIO_PIN_SET);
 
    	   	   HAL_GPIO_WritePin(CS_I2C_SPI_GPIO_Port,CS_I2C_SPI_Pin,GPIO_PIN_RESET);
@@ -235,28 +235,64 @@ int main(void)
 	  	   HAL_SPI_Transmit(&hspi1,SPI_Tx_Buffer,1,50);
 	  	   HAL_SPI_Receive(&hspi1, &myGlobalStruct.temporaryIvmeOlcerVerileri.temp_myXValue[1],1,50);
 
-	  	   myGlobalStruct.IvmeOlcerVerileri.myXValue =	(myGlobalStruct.temporaryIvmeOlcerVerileri.temp_myXValue[1] << 8)
-	  			   	   	   	   	   	   	   	   	   	   	+ (myGlobalStruct.temporaryIvmeOlcerVerileri.temp_myXValue[0]) * 0.06;
+	  	   myGlobalStruct.IvmeOlcerVerileri.myXValue =	((myGlobalStruct.temporaryIvmeOlcerVerileri.temp_myXValue[1] << 8)
+	  			   	   	   	   	   	   	   	   	   	   	+ (myGlobalStruct.temporaryIvmeOlcerVerileri.temp_myXValue[0])) * 0.06;
 
 
-	  	   	   if(myGlobalStruct.IvmeOlcerVerileri.myXValue <= 50){
-				   HAL_GPIO_TogglePin(GPIOD,LD6_Pin);
-
-
-	  	   }
-	  	   	   else if(myGlobalStruct.IvmeOlcerVerileri.myXValue >= 50) {
-		   HAL_GPIO_TogglePin(GPIOD,LD4_Pin);
+	  	   	   if(myGlobalStruct.IvmeOlcerVerileri.myXValue > 1200){
+				   HAL_GPIO_WritePin(GPIOD,LD5_Pin, GPIO_PIN_SET);
 
 
 	  	   }
+
+	  	   	   else {
+				   HAL_GPIO_WritePin(GPIOD,LD5_Pin, GPIO_PIN_RESET);
+
+	  	   	   }
+	  	   	    if(myGlobalStruct.IvmeOlcerVerileri.myXValue < 1200) {
+					   HAL_GPIO_WritePin(GPIOD,LD4_Pin, GPIO_PIN_SET);
+
+	  	   }
+	  	   	    else  {
+					   HAL_GPIO_WritePin(GPIOD,LD4_Pin, GPIO_PIN_RESET);
+
+	  	   	    }
 
 	   HAL_GPIO_WritePin(CS_I2C_SPI_GPIO_Port,CS_I2C_SPI_Pin,GPIO_PIN_SET);
 
+*/
 
 
 
+	   IvmeOlcerVeriOku(&hspi1,&myGlobalStruct.testIvme.testXValue[0],0x28,1);
+	   IvmeOlcerVeriOku(&hspi1,&myGlobalStruct.testIvme.testXValue[1],0x29,1);
+	   myGlobalStruct.IvmeOlcerVerileri.myXValue =
+			   	   ( (myGlobalStruct.testIvme.testXValue[1] << 8) + myGlobalStruct.testIvme.testXValue[1]) * 0.06;
 
 
+	   	   if(myGlobalStruct.IvmeOlcerVerileri.myXValue > 1916){
+		   HAL_GPIO_WritePin(GPIOD,LD5_Pin, GPIO_PIN_SET);
+
+
+	   }
+
+	   	   else {
+		   HAL_GPIO_WritePin(GPIOD,LD5_Pin, GPIO_PIN_RESET);
+
+	   	   }
+	   	    if(myGlobalStruct.IvmeOlcerVerileri.myXValue < 1916) {
+			   HAL_GPIO_WritePin(GPIOD,LD4_Pin, GPIO_PIN_SET);
+
+	   }
+	   	    else  {
+			   HAL_GPIO_WritePin(GPIOD,LD4_Pin, GPIO_PIN_RESET);
+
+	   	    }
+
+	//   byteBirlestir(&myGlobalStruct.IvmeOlcerVerileri.myXValue,
+			  // 	   &myGlobalStruct.testIvme.testXValue[0],
+				 //  &myGlobalStruct.testIvme.testXValue[1]);
+//
 
 		   	   	   	   /*
 		 		   * X DEGERI OKUMA KISMI.

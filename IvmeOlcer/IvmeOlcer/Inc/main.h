@@ -55,6 +55,14 @@ typedef struct GlobalType{
 
 	}temporaryIvmeOlcerVerileri;
 
+	struct {
+		uint8_t testXValue[2];
+		uint8_t testYValue[2];
+		uint8_t testZValue[2];
+
+
+	}testIvme;
+
 
 }myGlobalStruct_t;
 /* USER CODE END ET */
