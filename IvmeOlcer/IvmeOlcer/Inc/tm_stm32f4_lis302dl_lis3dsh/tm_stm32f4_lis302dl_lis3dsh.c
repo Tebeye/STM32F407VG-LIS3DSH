@@ -63,8 +63,7 @@ TM_LIS302DL_LIS3DSH_Device_t TM_LIS302DL_LIS3DSH_Init(TM_LIS302DL_LIS3DSH_Sensit
 	/* Some delay */
 	TM_LIS302DL_LIS3DSH_INT_Delay();
 	/* Detect proper device and init it */
-	if (TM_LIS302DL_LIS3DSH_Detect() == TM_LIS302DL_LIS3DSH_Device_LIS302DL) {
-		/* Init sequence for LIS302DL */
+	if (TM_LIS302DL_LIS3DSH_Detect() == TM_LIS302DL_LIS3DSH_Device_LIS302DL) { /* Init sequence for LIS302DL */
 		TM_LIS302DL_LIS3DSH_INT_InitLIS302DL(Sensitivity, Filter);
 		/* Return device */
 		return TM_LIS302DL_LIS3DSH_Device_LIS302DL;

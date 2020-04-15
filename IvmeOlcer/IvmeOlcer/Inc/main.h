@@ -37,7 +37,26 @@ extern "C" {
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
+typedef struct GlobalType{
 
+	struct{
+		uint16_t myXValue;
+		uint16_t myYValue;
+		uint16_t myZValue;
+
+
+	}IvmeOlcerVerileri;
+
+	struct {
+		uint8_t temp_myXValue[2];
+		uint8_t temp_myYValue[2];
+		uint8_t temp_myZValue[2];
+
+
+	}temporaryIvmeOlcerVerileri;
+
+
+}myGlobalStruct_t;
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/
