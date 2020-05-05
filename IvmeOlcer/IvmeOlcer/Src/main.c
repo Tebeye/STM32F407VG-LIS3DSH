@@ -20,9 +20,11 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "IvmeOlcereVeriGonder.h"
+#include "Paketleme.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -45,6 +47,8 @@ I2S_HandleTypeDef hi2s3;
 
 SPI_HandleTypeDef hspi1;
 
+UART_HandleTypeDef huart4;
+
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -54,6 +58,7 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_I2S3_Init(void);
 static void MX_SPI1_Init(void);
+static void MX_UART4_Init(void);
 /* USER CODE BEGIN PFP */
 /*extern void TM_LIS302DL_LIS3DSH_INT_ReadSPI(uint8_t* data, uint8_t addr, uint8_t count);
 void IvmeOlcer_SPI_Okuma(uint8_t* , uint8_t , uint8_t );*/
@@ -105,7 +110,6 @@ int main(void)
 	//HAL_SPI_TransmitReceive(&hspi1,&gonderilecekVeri,&alinacakVeri,veriBoyutu, sureAraligi);
 
   /* USER CODE END 1 */
-  
 
   /* MCU Configuration--------------------------------------------------------*/
 
@@ -127,11 +131,12 @@ int main(void)
   MX_GPIO_Init();
   MX_I2S3_Init();
   MX_SPI1_Init();
+  MX_UART4_Init();
   /* USER CODE BEGIN 2 */
 
   HAL_GPIO_WritePin(CS_I2C_SPI_GPIO_Port,CS_I2C_SPI_Pin,GPIO_PIN_RESET);
   SPI_Tx_Buffer [0] = 0x20;
-  SPI_Tx_Buffer [1] = 0x11;
+  SPI_Tx_Buffer [1] = 0x17;
   HAL_SPI_Transmit(&hspi1, SPI_Tx_Buffer,2,50);
 
   HAL_GPIO_WritePin(CS_I2C_SPI_GPIO_Port,CS_I2C_SPI_Pin,GPIO_PIN_SET);
@@ -267,8 +272,17 @@ int main(void)
 	   IvmeOlcerVeriOku(&hspi1,&myGlobalStruct.testIvme.testXValue[0],0x28,1);
 	   IvmeOlcerVeriOku(&hspi1,&myGlobalStruct.testIvme.testXValue[1],0x29,1);
 	   myGlobalStruct.IvmeOlcerVerileri.myXValue =
-			   	   ( (myGlobalStruct.testIvme.testXValue[1] << 8) + myGlobalStruct.testIvme.testXValue[1]) * 0.06;
+			   	   ( (myGlobalStruct.testIvme.testXValue[1] << 8)* 0.06 + myGlobalStruct.testIvme.testXValue[0]* 0.06) ;
 
+	   IvmeOlcerVeriOku(&hspi1,&myGlobalStruct.testIvme.testYValue[0],0x2A,1);
+	   IvmeOlcerVeriOku(&hspi1,&myGlobalStruct.testIvme.testYValue[1],0x2B,1);
+	   myGlobalStruct.IvmeOlcerVerileri.myYValue =
+			   	   ( (myGlobalStruct.testIvme.testYValue[1] << 8)* 0.06 + myGlobalStruct.testIvme.testYValue[0]* 0.06) ;
+
+	   IvmeOlcerVeriOku(&hspi1,&myGlobalStruct.testIvme.testZValue[0],0x2C,1);
+	   IvmeOlcerVeriOku(&hspi1,&myGlobalStruct.testIvme.testZValue[1],0x2D,1);
+	   myGlobalStruct.IvmeOlcerVerileri.myZValue =
+			   	   ( (myGlobalStruct.testIvme.testZValue[1] << 8)* 0.06 + myGlobalStruct.testIvme.testZValue[0]* 0.06) ;
 
 	   	   if(myGlobalStruct.IvmeOlcerVerileri.myXValue > 1916){
 		   HAL_GPIO_WritePin(GPIOD,LD5_Pin, GPIO_PIN_SET);
@@ -276,18 +290,6 @@ int main(void)
 
 	   }
 
-	   	   else {
-		   HAL_GPIO_WritePin(GPIOD,LD5_Pin, GPIO_PIN_RESET);
-
-	   	   }
-	   	    if(myGlobalStruct.IvmeOlcerVerileri.myXValue < 1916) {
-			   HAL_GPIO_WritePin(GPIOD,LD4_Pin, GPIO_PIN_SET);
-
-	   }
-	   	    else  {
-			   HAL_GPIO_WritePin(GPIOD,LD4_Pin, GPIO_PIN_RESET);
-
-	   	    }
 
 	//   byteBirlestir(&myGlobalStruct.IvmeOlcerVerileri.myXValue,
 			  // 	   &myGlobalStruct.testIvme.testXValue[0],
@@ -301,11 +303,26 @@ int main(void)
 
 
 
+	  // SERI ILETISIM PAKETI OLUSTURMA DOGRULAMA BYTE 0x03 olarak sectim.
+	  // SERI ILETISIM PAKETI IKINCI DOGRULAMA BYTE 0x01 olarak sectim.
+	  //paketOlustur(&myGlobalStruct,&huart4);
+	   	uint8_t ilkDogrulama = 0x03;
+	   	uint8_t bitisPaket = 0x0A;
+	   	uint8_t ikinciDogrulama = 0x01;
+	   	uint16_t paket = (ilkDogrulama << 8) ;
+	   	paket |= ikinciDogrulama;
+	  	HAL_UART_Transmit(&huart4,&ilkDogrulama, 1,50);
+	   	HAL_UART_Transmit(&huart4,&ikinciDogrulama, 1,50);
+	   	HAL_UART_Transmit(&huart4,&myGlobalStruct.testIvme.testXValue[0], 1,50);
+	   	HAL_UART_Transmit(&huart4,&myGlobalStruct.testIvme.testXValue[1], 1,50);
+	   	HAL_UART_Transmit(&huart4,&myGlobalStruct.testIvme.testYValue[0], 1,50);
+	   	HAL_UART_Transmit(&huart4,&myGlobalStruct.testIvme.testYValue[1], 1,50);
+	   	HAL_UART_Transmit(&huart4,&myGlobalStruct.testIvme.testZValue[0], 1,50);
+	   	HAL_UART_Transmit(&huart4,&myGlobalStruct.testIvme.testZValue[1], 1,50);
+	  //HAL_UART_Transmit(&huart4,&bitisPaket, 1,50);
+	  //HAL_UART_Transmit(&huart4, myGlobalStruct.IvmeOlcerVerileri.myXValue[1], 1,50);
 
-
-
-
-	  HAL_Delay(100);
+	  HAL_Delay(50);
 
     /* USER CODE END WHILE */
 
@@ -434,6 +451,39 @@ static void MX_SPI1_Init(void)
  // uint8_t myData
 //  HAL_SPI_Transmit(&hspi1, 0x20C7, 16, 0);
   /* USER CODE END SPI1_Init 2 */
+
+}
+
+/**
+  * @brief UART4 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_UART4_Init(void)
+{
+
+  /* USER CODE BEGIN UART4_Init 0 */
+
+  /* USER CODE END UART4_Init 0 */
+
+  /* USER CODE BEGIN UART4_Init 1 */
+
+  /* USER CODE END UART4_Init 1 */
+  huart4.Instance = UART4;
+  huart4.Init.BaudRate = 9600;
+  huart4.Init.WordLength = UART_WORDLENGTH_8B;
+  huart4.Init.StopBits = UART_STOPBITS_1;
+  huart4.Init.Parity = UART_PARITY_NONE;
+  huart4.Init.Mode = UART_MODE_TX_RX;
+  huart4.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart4.Init.OverSampling = UART_OVERSAMPLING_16;
+  if (HAL_UART_Init(&huart4) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN UART4_Init 2 */
+
+  /* USER CODE END UART4_Init 2 */
 
 }
 

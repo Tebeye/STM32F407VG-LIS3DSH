@@ -26,9 +26,9 @@ void IvmeOlcerVeriOku(SPI_HandleTypeDef* hspi,
 		}
 
 		/* Send address */
-	  	HAL_SPI_Transmit(hspi,&addr,1,50);
+	  	HAL_SPI_Transmit(hspi,&addr,1,20);
 		/* Receive data */
-	  	HAL_SPI_Receive(hspi, data,1,50);
+	  	HAL_SPI_Receive(hspi, data,1,20);
 
 		/* Stop SPI transmission */
 		HAL_GPIO_WritePin(CS_I2C_SPI_GPIO_Port,CS_I2C_SPI_Pin,GPIO_PIN_SET);
