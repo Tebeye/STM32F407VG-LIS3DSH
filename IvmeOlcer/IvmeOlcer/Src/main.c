@@ -34,12 +34,19 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+#define LIS3DSH_X_EKSENI_DUSUK				0x28
+#define LIS3DSH_X_EKSENI_YUKSEK				0x29
+#define LIS3DSH_Y_EKSENI_DUSUK				0x2A
+#define LIS3DSH_Y_EKSENI_YUKSEK				0x2B
+#define LIS3DSH_Z_EKSENI_DUSUK				0x2C
+#define LIS3DSH_Z_EKSENI_YUKSEK				0x2D
+#define IVMEOLCERBENKIMIM					0x0F
+#define LIS3DSH_KONTROL_REGISTER_4			0x20 //Bu register X,Y,Z eksenlerinden veri alinacagini soylemek icin kullanildi.
+#define LIS3DSH_ID							0x3F //LIS3DSH 0xOF adresine gonderilen bayt icin verecegi cevaptir.
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-#define ACCELEROMETER_REGISTER_WHO_I_AM		0x0F
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -60,8 +67,7 @@ static void MX_I2S3_Init(void);
 static void MX_SPI1_Init(void);
 static void MX_UART4_Init(void);
 /* USER CODE BEGIN PFP */
-/*extern void TM_LIS302DL_LIS3DSH_INT_ReadSPI(uint8_t* data, uint8_t addr, uint8_t count);
-void IvmeOlcer_SPI_Okuma(uint8_t* , uint8_t , uint8_t );*/
+//void IvmeOlcer_SPI_Okuma(uint8_t* , uint8_t , uint8_t );*/
 //IvmeOlcereVeriGonder(uint8_t, uint8_t );
 /* USER CODE END PFP */
 
@@ -135,14 +141,13 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
   HAL_GPIO_WritePin(CS_I2C_SPI_GPIO_Port,CS_I2C_SPI_Pin,GPIO_PIN_RESET);
-  SPI_Tx_Buffer [0] = 0x20;
+  SPI_Tx_Buffer [0] = LIS3DSH_KONTROL_REGISTER_4;
   SPI_Tx_Buffer [1] = 0x17;
   HAL_SPI_Transmit(&hspi1, SPI_Tx_Buffer,2,50);
-
   HAL_GPIO_WritePin(CS_I2C_SPI_GPIO_Port,CS_I2C_SPI_Pin,GPIO_PIN_SET);
   //////
   HAL_GPIO_WritePin(CS_I2C_SPI_GPIO_Port,CS_I2C_SPI_Pin,GPIO_PIN_RESET);
-   SPI_Tx_Buffer[0] = 0x20 | 0x80;
+   SPI_Tx_Buffer[0] = LIS3DSH_KONTROL_REGISTER_4 | 0x80;
    HAL_SPI_Transmit(&hspi1,SPI_Tx_Buffer,1,50);
 
    HAL_SPI_Receive(&hspi1, SPI_Rx_Buffer,1,50);
@@ -162,9 +167,6 @@ int main(void)
   while (1)
   {
 
-	  //*IvmeOlcer_SPI_Okuma(&id, LIS302DL_LIS3DSH_REG_WHO_I_AM,1);
-	//  HAL_Delay(20);
-
 /*
 
 	  HAL_GPIO_WritePin(CS_I2C_SPI_GPIO_Port,CS_I2C_SPI_Pin,GPIO_PIN_RESET);
@@ -176,12 +178,10 @@ int main(void)
 	   if(SPI_Rx_Buffer[0] < 50){
 
 		   HAL_GPIO_WritePin(GPIOD, LD6_Pin, GPIO_PIN_SET );
-
 	   }
 	   else {
 
 		   HAL_GPIO_WritePin(GPIOD, LD6_Pin, GPIO_PIN_RESET );
-
 
 	   }
 
@@ -201,7 +201,7 @@ int main(void)
 
 
 	   //SPI_Tx_Buffer [0] = 0x0F;
-	   SPI_Tx_Buffer [0] = ACCELEROMETER_REGISTER_WHO_I_AM | 0x80;
+	   SPI_Tx_Buffer [0] = IVMEOLCERBENKIMIM | 0x80;
 
 	   HAL_SPI_Transmit(&hspi1, SPI_Tx_Buffer,1,50);
 	   HAL_SPI_Receive(&hspi1, SPI_Rx_Buffer,1,50);
@@ -222,65 +222,23 @@ int main(void)
 	   	   /* WHO I AM OKUMA KISMI
 	   	    	* BITIS
 	   	    		*/
-/*
-		  /*
-		   * X DEGERI OKUMA KISMI.
-
-	    		0X28 X DEGERININ LOW BITINI
-				0X29 X DEGERININ HIGH BITINI ALACAKTIR.
-
-	   	   	   HAL_GPIO_WritePin(CS_I2C_SPI_GPIO_Port,CS_I2C_SPI_Pin,GPIO_PIN_RESET);
-		   	   SPI_Tx_Buffer[0] = 0x28 | 0x80;
-		  	   HAL_SPI_Transmit(&hspi1,SPI_Tx_Buffer,1,50);
-		  	   HAL_SPI_Receive(&hspi1, &myGlobalStruct.temporaryIvmeOlcerVerileri.temp_myXValue[0],1,50);
-		   HAL_GPIO_WritePin(CS_I2C_SPI_GPIO_Port,CS_I2C_SPI_Pin,GPIO_PIN_SET);
-
-   	   	   HAL_GPIO_WritePin(CS_I2C_SPI_GPIO_Port,CS_I2C_SPI_Pin,GPIO_PIN_RESET);
-	   	   SPI_Tx_Buffer[0] = 0x29 | 0x80;
-	  	   HAL_SPI_Transmit(&hspi1,SPI_Tx_Buffer,1,50);
-	  	   HAL_SPI_Receive(&hspi1, &myGlobalStruct.temporaryIvmeOlcerVerileri.temp_myXValue[1],1,50);
-
-	  	   myGlobalStruct.IvmeOlcerVerileri.myXValue =	((myGlobalStruct.temporaryIvmeOlcerVerileri.temp_myXValue[1] << 8)
-	  			   	   	   	   	   	   	   	   	   	   	+ (myGlobalStruct.temporaryIvmeOlcerVerileri.temp_myXValue[0])) * 0.06;
-
-
-	  	   	   if(myGlobalStruct.IvmeOlcerVerileri.myXValue > 1200){
-				   HAL_GPIO_WritePin(GPIOD,LD5_Pin, GPIO_PIN_SET);
-
-
-	  	   }
-
-	  	   	   else {
-				   HAL_GPIO_WritePin(GPIOD,LD5_Pin, GPIO_PIN_RESET);
-
-	  	   	   }
-	  	   	    if(myGlobalStruct.IvmeOlcerVerileri.myXValue < 1200) {
-					   HAL_GPIO_WritePin(GPIOD,LD4_Pin, GPIO_PIN_SET);
-
-	  	   }
-	  	   	    else  {
-					   HAL_GPIO_WritePin(GPIOD,LD4_Pin, GPIO_PIN_RESET);
-
-	  	   	    }
-
-	   HAL_GPIO_WritePin(CS_I2C_SPI_GPIO_Port,CS_I2C_SPI_Pin,GPIO_PIN_SET);
-
-*/
 
 
 
-	   IvmeOlcerVeriOku(&hspi1,&myGlobalStruct.testIvme.testXValue[0],0x28,1);
-	   IvmeOlcerVeriOku(&hspi1,&myGlobalStruct.testIvme.testXValue[1],0x29,1);
+
+
+	   IvmeOlcerVeriOku(&hspi1,&myGlobalStruct.testIvme.testXValue[0],LIS3DSH_X_EKSENI_DUSUK,1);
+	   IvmeOlcerVeriOku(&hspi1,&myGlobalStruct.testIvme.testXValue[1],LIS3DSH_X_EKSENI_YUKSEK,1);
 	   myGlobalStruct.IvmeOlcerVerileri.myXValue =
 			   	   ( (myGlobalStruct.testIvme.testXValue[1] << 8)* 0.06 + myGlobalStruct.testIvme.testXValue[0]* 0.06) ;
 
-	   IvmeOlcerVeriOku(&hspi1,&myGlobalStruct.testIvme.testYValue[0],0x2A,1);
-	   IvmeOlcerVeriOku(&hspi1,&myGlobalStruct.testIvme.testYValue[1],0x2B,1);
+	   IvmeOlcerVeriOku(&hspi1,&myGlobalStruct.testIvme.testYValue[0],LIS3DSH_Y_EKSENI_DUSUK,1);
+	   IvmeOlcerVeriOku(&hspi1,&myGlobalStruct.testIvme.testYValue[1],LIS3DSH_Y_EKSENI_YUKSEK,1);
 	   myGlobalStruct.IvmeOlcerVerileri.myYValue =
 			   	   ( (myGlobalStruct.testIvme.testYValue[1] << 8)* 0.06 + myGlobalStruct.testIvme.testYValue[0]* 0.06) ;
 
-	   IvmeOlcerVeriOku(&hspi1,&myGlobalStruct.testIvme.testZValue[0],0x2C,1);
-	   IvmeOlcerVeriOku(&hspi1,&myGlobalStruct.testIvme.testZValue[1],0x2D,1);
+	   IvmeOlcerVeriOku(&hspi1,&myGlobalStruct.testIvme.testZValue[0],LIS3DSH_Z_EKSENI_DUSUK,1);
+	   IvmeOlcerVeriOku(&hspi1,&myGlobalStruct.testIvme.testZValue[1],LIS3DSH_Z_EKSENI_YUKSEK,1);
 	   myGlobalStruct.IvmeOlcerVerileri.myZValue =
 			   	   ( (myGlobalStruct.testIvme.testZValue[1] << 8)* 0.06 + myGlobalStruct.testIvme.testZValue[0]* 0.06) ;
 
@@ -291,21 +249,11 @@ int main(void)
 	   }
 
 
-	//   byteBirlestir(&myGlobalStruct.IvmeOlcerVerileri.myXValue,
-			  // 	   &myGlobalStruct.testIvme.testXValue[0],
-				 //  &myGlobalStruct.testIvme.testXValue[1]);
-//
-
-		   	   	   	   /*
-		 		   * X DEGERI OKUMA KISMI.
-		 		   * BITIS.
-		 		   */
-
 
 
 	  // SERI ILETISIM PAKETI OLUSTURMA DOGRULAMA BYTE 0x03 olarak sectim.
 	  // SERI ILETISIM PAKETI IKINCI DOGRULAMA BYTE 0x01 olarak sectim.
-	  //paketOlustur(&myGlobalStruct,&huart4);
+
 	   	uint8_t ilkDogrulama = 0x03;
 	   	uint8_t bitisPaket = 0x0A;
 	   	uint8_t ikinciDogrulama = 0x01;
